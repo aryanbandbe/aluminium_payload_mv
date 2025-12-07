@@ -1,0 +1,48 @@
+{
+  "projectId": "testProj001",
+  "scenarioId": "testScen001",
+  "metal": "aluminium",
+  "route": "al_primary_prebake",
+  "stage": "full_chain",
+  "functionalUnit_kg": 1000,
+  "inputs": {
+    "mining": {
+      "ore_input_kg": null,
+      "ore_grade_percent": 3.2,
+      "process_recovery": null,
+      "electricity_kWh": 520,
+      "fuel_diesel_L": 110,
+      "fuel_heavyOil_L": 15,
+      "auxiliary_materials_kg": null,
+      "freshwater_m3": null,
+      "process_water_m3": 8,
+      "water_returned_m3": 2,
+      "co_product_outputs_total_kg": 0
+    },
+    "extraction": {
+      "ore_input_kg": 1500,
+      "fraction_alumina": null,
+      "reduction_efficiency": null,
+      "electricity_kWh": 1750,
+      "fuel_coal_kg": 25,
+      "anode_carbon_kg": 45,
+      "anode_effect_minutes": 6,
+      "CF4_factor": 0.03,
+      "C2F6_factor": 0.002,
+      "impurity_fraction": 0.01,
+      "anode_residue_kg": 3
+    },
+    "manufacturing": {
+      "metal_input_kg": 950,
+      "process_yield": null,
+      "electricity_kWh": 200,
+      "fuel_naturalGas_MJ": 40,
+      "lubricants_kg": null,
+      "auxiliary_materials_kg": null,
+      "freshwater_m3": null,
+      "process_water_m3": 7,
+      "cooling_water_returned": 3,
+      "scrap_kg": 10
+    }
+  }
+}

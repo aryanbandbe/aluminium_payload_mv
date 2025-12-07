@@ -1,0 +1,62 @@
+# =========================
+# PYTHON AND FASTAPI PROJECT
+# =========================
+
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.env/
+ENV/
+env/
+.venv/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# =========================
+# DATA AND MODEL FILES
+# =========================
+# Large datasets and trained model files (use GitHub Releases instead)
+datasets/
+models/
+*.joblib
+*.pkl
+*.h5
+*.pt
+*.bin
+*.csv
+*.xls*
+*.xlsx
+
+# =========================
+# SYSTEM / EDITOR FILES
+# =========================
+.DS_Store
+Thumbs.db
+*.log
+*.swp
+*.swo
+*.bak
+
+# =========================
+# RENDER / DEPLOYMENT FILES
+# =========================
+# (keep render.yaml, runtime.txt, requirements.txt, setup_render.sh)
+# but ignore build caches
+*.tar.gz
+*.zip
+*.egg-info/
+build/
+dist/
+
+# =========================
+# FIREBASE / CREDENTIAL FILES
+# =========================
+firebase.json
+serviceAccountKey.json
+*.credentials
+*.token
