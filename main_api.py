@@ -4,11 +4,9 @@ import joblib
 import numpy as np
 import json
 import os
-import requests
 
 # === CONFIG ===
 MODEL_DIR = "models"
-BRIGHTWAY_URL = "https://brightway-engine.onrender.com/aluminium/run"
 
 # === Load all models ===
 MODELS = {}
@@ -23,14 +21,14 @@ print(f"✅ Loaded models for routes: {list(MODELS.keys())}\n")
 # === Initialize FastAPI app ===
 app = FastAPI(
     title="Aluminium Imputation API",
-    description="Fills missing values in aluminium process payloads and sends results to Brightway Engine.",
-    version="1.0.0"
+    description="Fills missing values in aluminium process payloads and returns filled payload to the caller (Firebase).",
+    version="2.0.0"
 )
 
 # Allow CORS (so Firebase/Render can access)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # You can replace with your Firebase domain later
+    allow_origins=["*"],  # You can later restrict this to your Firebase domain
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -39,7 +37,10 @@ app.add_middleware(
 
 @app.post("/impute/{metal}")
 async def impute_missing_values(metal: str, payload: dict):
-    """Impute missing values for aluminium process payloads and forward to Brightway Engine."""
+    """
+    Impute missing values for aluminium process payloads and return the filled payload
+    directly to the requesting client (Firebase).
+    """
 
     try:
         route = payload.get("route")
@@ -63,7 +64,7 @@ async def impute_missing_values(metal: str, payload: dict):
                     model = bundle["model"]
                     used_features = bundle["used_features"]
 
-                    # Create dummy features for prediction
+                    # Create dummy feature vector for prediction
                     X_pred = np.zeros((1, len(used_features)))
                     pred_value = round(float(model.predict(X_pred)[0]), 4)
                     filled_inputs[stage][key] = pred_value
@@ -73,22 +74,14 @@ async def impute_missing_values(metal: str, payload: dict):
 
         payload["inputs"] = filled_inputs
 
-        print("\n✅ Final Filled Payload:\n", json.dumps(payload, indent=2))
+        print("\n✅ Final Filled Payload (sending back to Firebase):\n", json.dumps(payload, indent=2))
 
-        # === Send the imputed payload to Brightway Engine ===
-        response = requests.post(BRIGHTWAY_URL, json=payload)
-
-        if response.status_code == 200:
-            print("🌍 Brightway Engine Response: SUCCESS")
-            return {
-                "status": "success",
-                "message": "Payload imputed and processed successfully.",
-                "brightway_response": response.json(),
-                "final_payload": payload
-            }
-        else:
-            print("⚠️ Brightway Engine Error:", response.text)
-            raise HTTPException(status_code=500, detail=f"Brightway Engine Error: {response.text}")
+        # Return the filled payload directly to Firebase
+        return {
+            "status": "success",
+            "message": "Payload imputed successfully.",
+            "filled_payload": payload
+        }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -96,4 +89,4 @@ async def impute_missing_values(metal: str, payload: dict):
 
 @app.get("/")
 async def root():
-    return {"message": "✅ Aluminium Imputation API is running successfully!"}
+    return {"message": "✅ Aluminium Imputation API is running successfully and ready to fill missing values!"}
