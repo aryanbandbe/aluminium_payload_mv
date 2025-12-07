@@ -5,7 +5,6 @@ import numpy as np
 import json
 import os
 import requests
-import pandas as pd
 
 # === CONFIG ===
 MODEL_DIR = "models"
@@ -13,12 +12,13 @@ BRIGHTWAY_URL = "https://brightway-engine.onrender.com/aluminium/run"
 
 # === Load all models ===
 MODELS = {}
-for file in os.listdir(MODEL_DIR):
-    if file.startswith("xgb_imputer_") and file.endswith(".joblib"):
-        process_name = file.replace("xgb_imputer_", "").replace(".joblib", "")
-        MODELS[process_name] = joblib.load(os.path.join(MODEL_DIR, file))
+if os.path.exists(MODEL_DIR):
+    for file in os.listdir(MODEL_DIR):
+        if file.startswith("xgb_imputer_") and file.endswith(".joblib"):
+            process_name = file.replace("xgb_imputer_", "").replace(".joblib", "")
+            MODELS[process_name] = joblib.load(os.path.join(MODEL_DIR, file))
 
-print(f"✅ Loaded models for processes: {list(MODELS.keys())}\n")
+print(f"✅ Loaded models for routes: {list(MODELS.keys())}\n")
 
 # === Initialize FastAPI app ===
 app = FastAPI(
@@ -30,24 +30,23 @@ app = FastAPI(
 # Allow CORS (so Firebase/Render can access)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # You can replace with your Firebase domain later
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-@app.post("/impute")
-async def impute_missing_values(payload: dict):
+@app.post("/impute/{metal}")
+async def impute_missing_values(metal: str, payload: dict):
     """Impute missing values for aluminium process payloads and forward to Brightway Engine."""
 
     try:
-        metal = payload.get("metal")
         route = payload.get("route")
         inputs = payload.get("inputs", {})
 
-        if metal != "aluminium":
-            raise HTTPException(status_code=400, detail="❌ Only aluminium supported.")
+        if metal.lower() != "aluminium":
+            raise HTTPException(status_code=400, detail="❌ Only aluminium supported for this API.")
         if route not in MODELS:
             raise HTTPException(status_code=400, detail=f"❌ Unknown route '{route}'.")
 
@@ -64,6 +63,7 @@ async def impute_missing_values(payload: dict):
                     model = bundle["model"]
                     used_features = bundle["used_features"]
 
+                    # Create dummy features for prediction
                     X_pred = np.zeros((1, len(used_features)))
                     pred_value = round(float(model.predict(X_pred)[0]), 4)
                     filled_inputs[stage][key] = pred_value
